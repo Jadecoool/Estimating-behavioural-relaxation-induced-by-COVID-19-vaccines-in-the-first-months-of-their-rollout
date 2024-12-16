@@ -46,4 +46,4 @@ if __name__ == "__main__":
 ```
 
 input for region can be 'British Columbia' or 'Lombardy' or 'London' or 'Sao Paulo'
-input for model_id can be '_07_' or '_08_' or '_09_' or '_10_'. Note: '_07_' correspond 'model 1', '_08_' correspond 'model 2', '_09_' correspond 'model 3', '_10_' correspond 'model 4'
+input for model_id can be '_07_' or '_08_' or '_09_' or '_10_'. Note: '_07_' corresponds to 'model 1', '_08_' corresponds to 'model 2', '_09_' corresponds to 'model 3', '_10_' corresponds to 'model 4'
