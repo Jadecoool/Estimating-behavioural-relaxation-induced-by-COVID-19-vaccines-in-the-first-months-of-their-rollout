@@ -1,5 +1,5 @@
 # Calibration Code
-
+for running abc-smc calibration
 ## Files Description
 - `baseline_model_single_strain2_data2.py` and `baseline_model_two_strains2_data2.py` are for baseline model
 - `behaviour_model_single_strain2_data2.py` and `behaviour_model_two_strains2_data2.py` are for behavioural models 1 and 2
