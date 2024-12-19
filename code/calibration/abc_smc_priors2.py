@@ -35,10 +35,9 @@ def get_seir_function(is_london: bool, model_id: str):
     """
     根据地区和模型类型返回对应的SEIR函数
     Args:
-        is_london: 是否是伦敦
-        model_id: 模型类型 ('baseline', 'model1', 'model2', 'model3', 'model4')
+        is_london: True or False
+        model_id:  ('baseline', 'model1', 'model2', 'model3', 'model4')
     """
-    # London的三种情况
     if is_london:
         if model_id == 'baseline':
             from baseline_model_single_strain2_data2_deltadays import SEIR
@@ -48,7 +47,6 @@ def get_seir_function(is_london: bool, model_id: str):
             from variation_model_single_strain2_data2_deltadays import SEIR
         else:
             raise ValueError(f"Unknown model_id: {model_id}")
-    # 非London的三种情况
     else:
         if model_id == 'baseline':
             from baseline_model_two_strains2_data2_deltadays import SEIR
@@ -64,17 +62,10 @@ def get_seir_function(is_london: bool, model_id: str):
 
 
 def run_fullmodel(R0, seed, Delta, start_week_delta, i0_q, r0_q, **fixed_params):
-    """
-    统一的运行接口
-    """
-    # 确定是哪种情况
     is_london = fixed_params['basin'] == 'London'
     model_id = fixed_params.get('model_id', '')
 
-    # 获取对应的SEIR函数
     SEIR = get_seir_function(is_london, model_id)
-
-    # 准备基础参数
     all_params = {
         'R0': R0,
         'seed': seed,
@@ -83,18 +74,14 @@ def run_fullmodel(R0, seed, Delta, start_week_delta, i0_q, r0_q, **fixed_params)
         'i0_q': i0_q,
         'r0_q': r0_q,
     }
-
-    # 根据不同情况添加必要参数
     if is_london:
         if model_id == 'baseline':
-            # London baseline 情况的参数
             required_params = [
                 'start_date_org', 'end_date', 'vaxstart_date',
                 'eps', 'mu', 'ifr', 'VE', 'VES', 'Nk',
                 'google_mobility', 'vaccine', 'basin'
             ]
         else:
-            # London behaviour/variation 情况的参数 (参数相同)
             required_params = [
                 'start_date_org', 'end_date', 'vaxstart_date',
                 'alpha', 'gamma', 'r', 'eps', 'mu', 'ifr',
@@ -102,7 +89,6 @@ def run_fullmodel(R0, seed, Delta, start_week_delta, i0_q, r0_q, **fixed_params)
             ]
     else:
         if model_id == 'baseline':
-            # 非London baseline 情况的参数
             required_params = [
                 'start_date_org', 'end_date', 'vaxstart_date',
                 't_alpha_org', 't_alpha_delta', 'eps', 'mu', 'ifr',
@@ -110,7 +96,6 @@ def run_fullmodel(R0, seed, Delta, start_week_delta, i0_q, r0_q, **fixed_params)
                 'google_mobility', 'vaccine', 'basin'
             ]
         else:
-            # 非London behaviour/variation 情况的参数 (参数相同)
             required_params = [
                 'start_date_org', 'end_date', 'vaxstart_date',
                 't_alpha_org', 't_alpha_delta', 'eps', 'mu',
@@ -118,13 +103,10 @@ def run_fullmodel(R0, seed, Delta, start_week_delta, i0_q, r0_q, **fixed_params)
                 'Nk', 'Alpha_increase', 'behaviour', 'behaviour_bool', 'basin'
             ]
 
-    # 检查并添加必要参数
     for param in required_params:
         if param not in fixed_params:
             raise ValueError(f"Missing required parameter: {param}")
         all_params[param] = fixed_params[param]
-
-    # 调用SEIR并返回结果
     results = SEIR(**all_params)['weekly_deaths']
 
     return results
@@ -195,8 +177,8 @@ def calibration(epimodel: Callable,
     with open(os.path.join(f'./calibration_runs/{basin_name}/abc_history/', f"priors2_{model_id}_{filename}.pkl"), 'wb') as file:
         pkl.dump(history, file)
 
-    history.get_distribution()[0].to_csv(f"./posteriors/new8_deltadays/priors2_{basin_name}_{model_id}_{filename}.csv")
-    np.savez_compressed(f"./posteriors/new8_deltadays/priors2_{basin_name}_{model_id}_{filename}.npz",
+    history.get_distribution()[0].to_csv(f"./posteriors/{basin_name}_{model_id}_{filename}.csv")
+    np.savez_compressed(f"./posteriors/{basin_name}_{model_id}_{filename}.npz",
                         np.array([d["data"] for d in history.get_weighted_sum_stats()[1]]))
 
     return history
@@ -255,7 +237,7 @@ def get_base_prior() -> Dict:
         'i0_q': RV("uniform", 5 * 10 ** (-4), 2 * 10 ** (-2) - 5 * 10 ** (-4)),
         'r0_q': RV("uniform", 0.1, 0.4 - 0.1),
         'Delta': RV('rv_discrete', values=(np.arange(3, 64), [1. / 61.] * 61)),
-        'start_week_delta': RV('rv_discrete', values=(np.arange(0, 30), [1. / 30.] * 30))
+        'start_week_delta': RV('rv_discrete', values=(np.arange(0, 8), [1. / 8.] * 8))
     }
     return prior
 
@@ -291,7 +273,7 @@ def get_transition_mapping(basin: str, model_id: str) -> Dict:
                                               p_stay=0.7),
         'R0': pyabc.MultivariateNormalTransition(),
         'seed': pyabc.MultivariateNormalTransition(),
-        'start_week_delta': pyabc.DiscreteJumpTransition(domain=np.arange(0, 30),
+        'start_week_delta': pyabc.DiscreteJumpTransition(domain=np.arange(0, 8),
                                                          p_stay=0.7),
         'i0_q': pyabc.MultivariateNormalTransition(),
         'r0_q': pyabc.MultivariateNormalTransition(),
