@@ -7,7 +7,6 @@ from utils import get_beta
 from datetime import datetime, timedelta
 from numba import jit
 from functions2wave_data2 import import_country, get_totR, update_contacts, get_contacts
-np.random.seed(0)
 ncomp = 14
 nage = 16
 
@@ -79,7 +78,7 @@ def SEIR(start_date_org,
     # number of age groups
     n_age = len(Nk)
 
-    country_dict = import_country(basin, path_to_data='../data2')
+    country_dict = import_country(basin, path_to_data='../data')
 
     deltadays = end_date - start_date
     dates = [start_date + timedelta(days=d) for d in range(deltadays.days)]
