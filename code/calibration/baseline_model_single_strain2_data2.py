@@ -7,7 +7,6 @@ from utils import get_beta
 from datetime import datetime, timedelta
 from numba import jit
 from functions2wave_data2 import import_country, get_totR, update_contacts, get_contacts
-np.random.seed(0)
 ncomp = 8
 nage = 16
 
